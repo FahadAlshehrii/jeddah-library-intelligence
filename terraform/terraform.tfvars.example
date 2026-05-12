@@ -1,0 +1,7 @@
+#put what you want and copy for example
+resource_group_name = "jeddah-library-rg"
+location            = "switzerlandnorth"
+acr_name            = "jeddahlibrariacr"        # must be globally unique
+app_name            = "jeddah-library-intel"     # must be globally unique
+image_name          = "jeddah-library-intelligence"
+environment         = "production"

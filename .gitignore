@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.env
+model_artifacts.pkl
+outputs/
+.DS_Store
+*.egg-info/
+venv/
+terraform/terraform.tfvars
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
