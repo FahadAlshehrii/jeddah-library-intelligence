@@ -86,7 +86,7 @@ Neural Network wins on all three metrics. It captures complex non-linear interac
 ## 🏃 Run Locally
 
 ```bash
-git clone https://github.com/FahadAlshehri/jeddah-library-intelligence
+git clone https://github.com/FahadAlshehrii/jeddah-library-intelligence
 cd jeddah-library-intelligence
 
 pip install -r requirements.txt
