@@ -20,38 +20,9 @@ Library management has no reliable way to predict hourly rental demand per branc
 
 ## 🏗️ Architecture
 
-![Architecture Diagram](architecture.png)
+![Architecture Diagram](jeddah_architecture_final.png)
 
-```
-Raw CSV (6,609 rows)
-       │
-       ▼
-┌─────────────────────────┐
-│  Data Cleaning Pipeline │  ← Fix dates, negatives, text, duplicates
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│  Feature Engineering    │  ← Peak hours, temp bins, weekend flags
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│  ML Model Training      │  ← Linear Reg, Decision Tree, RF, Neural Network
-│  Best: Neural Network   │     R² = 0.93 | MAE = 3.99 rentals
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│  Streamlit Dashboard    │  ← 3 tabs: Predict / Analyze / Compare
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────────────────────┐
-│  Docker → GitHub Actions → Azure ACR   │
-│  → Azure App Service → Live Public URL │
-└─────────────────────────────────────────┘
-```
+
 
 ---
 
@@ -66,9 +37,10 @@ Raw CSV (6,609 rows)
 
 Neural Network wins on all three metrics. It captures complex non-linear interactions between hour, temperature, branch, and demand that tree-based models approximate but cannot fully model. Trained with early stopping to prevent overfitting.
 
+> *Note: Neural Network achieves R²=0.9311 on GPU (Colab). On CPU, Random Forest is the best (R²=0.9205). The pipeline automatically selects the best model for your hardware.*
 ---
 
-## 🚀 Dashboard Features
+##  Dashboard Features
 
 ### Tab 1 — Demand Predictor
 - Input: branch, hour, day, season, weather conditions, membership type
@@ -159,8 +131,6 @@ jeddah-library-intelligence/
 ## 👤 Author
 
 **Fahad Alshehri**
-IT Student, King Abdulaziz University (GPA 4.85/5.0)
-KAUST Advanced AI Certified
 [LinkedIn](https://linkedin.com/in/f-alshehrii) · [GitHub](https://github.com/FahadAlshehri)
 
 ---
