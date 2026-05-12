@@ -161,18 +161,8 @@ https://your-app-name.azurewebsites.net
 
 ---
 
-## STEP 7 — Open the Draw.io diagram
 
-1. Go to https://app.diagrams.net
-2. Click **Extras** → **Edit Diagram**
-3. Delete everything in the box
-4. Paste the contents of `architecture.drawio`
-5. Click **OK**
-6. Export as PNG: **File** → **Export as** → **PNG** → **Export**
 
-This is the architecture diagram to include in your GitHub README and show to Abdulrahman.
-
----
 
 ## Troubleshooting
 
