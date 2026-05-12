@@ -1,9 +1,7 @@
 """
 Jeddah Library Rentals — Full Solution Pipeline
 Parts: Loading → Cleaning → EDA → Feature Engineering → ML (4 models) → Comparison
-Best model: Neural Network (R²≈0.93, MAE≈3.99, RMSE≈5.52)
 """
-
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -263,13 +261,32 @@ for bar, val in zip(bars, comparison['R2']):
             f'{val:.4f}', ha='center', fontsize=10, fontweight='bold')
 save_plot('15_model_comparison.png')
 
+# Ensure comparison is sorted by R² (best first) before saving
+comparison = comparison.sort_values('R2', ascending=False)
+
 # ─────────────────────────────────────────────
-# PART 9: SAVE ARTIFACTS
+# PART 9: SAVE ARTIFACTS (with best model)
 # ─────────────────────────────────────────────
 print("\n[9] Saving artifacts...")
+
+# Determine which model performed best (by R²)
+best_model_name = comparison.iloc[0]['Model']
+if best_model_name == 'Random Forest':
+    best_model = rf
+    model_type = 'random_forest'
+elif best_model_name == 'Neural Network':
+    best_model = nn_model
+    model_type = 'neural_network'
+elif best_model_name == 'Linear Regression':
+    best_model = lr
+    model_type = 'linear_regression'
+else:
+    best_model = dt
+    model_type = 'decision_tree'
+
 artifacts = {
-    'model': nn_model,
-    'model_type': 'neural_network',
+    'model': best_model,                     # ✅ now the true best model
+    'model_type': model_type,
     'rf_model': rf,
     'scaler': scaler,
     'feature_cols': feature_cols,
@@ -287,4 +304,7 @@ df.to_csv('outputs/cleaned_data.csv', index=False)
 
 print("    Saved: model_artifacts.pkl")
 print("    Saved: outputs/model_comparison.csv")
-print("\n✅ Pipeline complete. Neural Network wins all 3 metrics.")
+
+best_model_name = comparison.iloc[0]['Model']
+best_r2 = comparison.iloc[0]['R2']
+print(f"\n✅ Pipeline complete. Best model: {best_model_name} with R²={best_r2:.4f}")

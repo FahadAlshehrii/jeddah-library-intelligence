@@ -30,6 +30,9 @@ comparison    = artifacts['comparison']
 branch_totals = artifacts['branch_totals']
 hour_avg      = artifacts['hour_avg']
 fi_rf         = artifacts['fi_rf']
+
+comparison = comparison.sort_values('R2', ascending=False)
+
 best_row      = comparison.iloc[0]
 best_name     = best_row['Model']
 best_r2       = best_row['R2']
@@ -41,7 +44,6 @@ with st.sidebar:
     st.markdown("---")
     st.markdown(
         "Built by **Fahad Alshehri**\n\n"
-        "KAU IT · KAUST Advanced AI\n\n"
         "🔗 [GitHub](https://github.com/FahadAlshehrii)"
     )
     st.markdown("---")
@@ -74,11 +76,14 @@ with tab1:
     with col2:
         st.markdown("**🌡️ Weather Conditions**")
         temperature = st.slider("Temperature (°C)", 10.0, 50.0, 28.0, 0.5)
-        humidity    = st.slider("Humidity (%)", 10.0, 100.0, 55.0, 1.0)
-        wind_speed  = st.slider("Wind Speed (m/s)", 0.0, 15.0, 5.0, 0.1)
-        visibility  = st.slider("Visibility (m)", 100, 2000, 1200, 50)
-        solar       = st.slider("Solar Radiation (MJ/m²)", 0.0, 4.0, 2.0, 0.1)
-        rainfall    = st.slider("Rainfall (mm)", 0.0, 10.0, 0.0, 0.1)
+        
+        # Hide the granular ML inputs inside a clean dropdown
+        with st.expander("Advanced Weather Parameters"):
+            humidity    = st.slider("Humidity (%)", 10.0, 100.0, 55.0, 1.0)
+            wind_speed  = st.slider("Wind Speed (m/s)", 0.0, 15.0, 5.0, 0.1)
+            visibility  = st.slider("Visibility (m)", 100, 2000, 1200, 50)
+            solar       = st.slider("Solar Radiation (MJ/m²)", 0.0, 4.0, 2.0, 0.1)
+            rainfall    = st.slider("Rainfall (mm)", 0.0, 10.0, 0.0, 0.1)
 
     with col3:
         st.markdown("**📖 Visit Context**")
@@ -88,7 +93,7 @@ with tab1:
         month       = st.slider("Month", 1, 12, 6)
         day_num     = st.slider("Day of Month", 1, 31, 15)
 
-    if st.button("🚀 Predict Demand", use_container_width=True, type="primary"):
+    if st.button(" Predict Demand", use_container_width=True, type="primary"):
 
         # Derived features
         is_peak = 1 if (9 <= hour <= 11) or (16 <= hour <= 19) else 0
@@ -134,9 +139,17 @@ with tab1:
         X_input = np.array([list(input_dict.values())])
         X_scaled = scaler.transform(X_input)
 
-        # Neural Network returns 2D array — flatten it
-        raw = model.predict(X_scaled, verbose=0)
-        prediction = max(0, round(float(raw.flatten()[0])))
+        # Handle different model types (NN supports verbose, RF does not)
+        if model_type in ['neural_network', 'keras', 'tensorflow']:
+            raw = model.predict(X_scaled, verbose=0)
+        else:
+            raw = model.predict(X_scaled)
+        
+        # For NN, raw may be 2D; for sklearn it's 1D
+        if hasattr(raw, 'flatten'):
+            prediction = max(0, round(float(raw.flatten()[0])))
+        else:
+            prediction = max(0, round(float(raw[0])))
 
         # Staffing logic
         if prediction < 20:
@@ -156,14 +169,17 @@ with tab1:
             staff_label = "🔴 Peak demand — 4+ staff members needed"
             color = "red"
 
+       # Get the historical average for this exact branch and hour
+        historical_avg = df[(df['Library_Branch'] == branch) & (df['Hour'] == hour)]['Rentals_Count'].mean()
+        difference = round(prediction - historical_avg)
+
         st.markdown("---")
         r1, r2, r3 = st.columns(3)
-        r1.metric("📦 Predicted Rentals", f"{prediction}", help="Hourly rental count")
-        r2.metric("👥 Staff Recommended", f"{staff}", help="Based on demand level")
-        r3.metric("⏰ Peak Hour?", "Yes ✅" if is_peak else "No ❌")
-
+        r1.metric("📦 Predicted Rentals", f"{prediction}", delta=f"{difference} vs average")
+        r2.metric("👥 Staff Recommended", f"{staff}")
+        r3.metric("⏰ Peak Hour?", "Yes" if is_peak else "No")
         st.markdown(f"**Staffing guidance:** {staff_label}")
-
+        
         # Show hourly curve for this branch
         branch_df = df[df['Library_Branch'] == branch]
         hourly = branch_df.groupby('Hour')['Rentals_Count'].mean().reset_index()
@@ -259,8 +275,8 @@ with tab3:
 
     # Metrics table
     st.dataframe(
-        comparison.style.highlight_max(subset=['R2'], color='#d4edda')
-                        .highlight_min(subset=['MAE','RMSE'], color='#d4edda')
+        comparison.style.highlight_max(subset=['R2'], color="#014d13")
+                        .highlight_min(subset=['MAE','RMSE'], color="#014d13")
                         .format({'R2': '{:.4f}', 'MAE': '{:.2f}', 'RMSE': '{:.2f}'}),
         use_container_width=True
     )
@@ -296,13 +312,18 @@ with tab3:
     fig_fi.update_layout(height=420)
     st.plotly_chart(fig_fi, use_container_width=True)
 
-    # Conclusion
+    # Conclusion – DYNAMIC: uses the actual best model from the comparison
+    best_model_row = comparison.iloc[0]
+    best_model_name = best_model_row['Model']
+    best_r2 = best_model_row['R2']
+    best_mae = best_model_row['MAE']
+    best_rmse = best_model_row['RMSE']
+
     st.subheader("📝 Conclusion")
     st.success(
-        "**Random Forest performed best** with R²=0.92, MAE=4.3, RMSE=5.9. "
-        "It outperformed Linear Regression and Decision Tree because it handles non-linear "
-        "relationships between weather, time, and rental demand — and reduces overfitting "
-        "through ensemble averaging across 100 trees.\n\n"
+        f"**{best_model_name} performed best** with R²={best_r2:.4f}, MAE={best_mae:.2f}, RMSE={best_rmse:.2f}. "
+        "It captures complex non-linear interactions between hour, temperature, branch, "
+        "and demand – outperforming other models on this hardware.\n\n"
         "**Key drivers of demand:** Hour of day, temperature, humidity, and branch location "
         "are the strongest predictors. Evening hours (16–19) consistently drive peak demand "
         "across all branches, and Downtown Central is the highest-volume branch requiring "
