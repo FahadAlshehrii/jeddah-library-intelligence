@@ -2,7 +2,7 @@
 
 > End-to-end ML pipeline + live dashboard for predicting hourly book rental demand across public library branches in Jeddah, Saudi Arabia.
 
-[![Deploy](https://github.com/FahadAlshehri/jeddah-library-intelligence/actions/workflows/deploy.yml/badge.svg)](https://github.com/FahadAlshehri/jeddah-library-intelligence/actions)
+[![Deploy](https://github.com/FahadAlshehrii/jeddah-library-intelligence/actions/workflows/deploy.yml/badge.svg)](https://github.com/FahadAlshehrii/jeddah-library-intelligence/actions)
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.35-red)
 ![Azure](https://img.shields.io/badge/Azure-App_Service-0078D4)
